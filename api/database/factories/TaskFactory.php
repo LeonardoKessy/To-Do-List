@@ -23,7 +23,7 @@ class TaskFactory extends Factory
         return [
             "user_id" => User::inRandomOrder()->value('id') ?? User::factory(),
             "tittle" => $this->faker->sentence(3),
-            "detail" => $this->faker->sentence(12),
+            "detail" => $this->faker->paragraph(),
             "color" => $this->faker->randomElement(['red', 'blue', 'yellow', 'purple'])
         ];
     }

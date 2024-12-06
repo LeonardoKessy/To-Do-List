@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('task', function (Blueprint $table) {
             $table->id();
-            $table->string('tittle');
-            $table->string('detail');
-            $table->string('color');
+            $table->string('tittle', 127);
+            $table->string('detail', 1023);
+            $table->string('color', 31);
             $table->unsignedBigInteger('user_id');
 
             $table->foreign('user_id')
