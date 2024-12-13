@@ -4,31 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Http\Resources\TaskResource;
+use App\Http\Services\Filters\TaskFilter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 class taskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        Task::factory()->count(5)->create();
-        $tasks = Task::all();
-        $data = $this->__buildReturn($tasks, 200);
-        return response()->json($data, 200);
+        $queries = (new TaskFilter)->getFilters($request);
+        $tasks = Task::where($queries)->paginate();
+
+        return TaskResource::collection($tasks);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|max:255',
+            'tittle' => 'required|max:255',
             'detail' => 'required|max:511',
             'color' => 'required',
             'user_id' => 'required',
         ]);
 
         $task = Task::create($validated);
-        $data = $this->__buildReturn($task, 201);
-        return response()->json($data, 201);
+        return new TaskResource($task);
     }
 
     public function show(string $id)
@@ -36,12 +37,14 @@ class taskController extends Controller
         $task = Task::find($id);
         
         if (!$task) {
-            $data = $this->__buildReturn(null, 404, "Not Found");
+            $data = [
+                "message" => "Not Found.",
+                "status" => 404
+            ];
             return response()->json($data, 404);
         }
 
-        $data = $this->__buildReturn($task, 200);
-        return response()->json($data, 200);
+        return new TaskResource($task);
     }
 
     public function update(Request $request, string $id)
@@ -67,12 +70,7 @@ class taskController extends Controller
 
         $task->save();
 
-        $data = [
-            "message" => "Task modified successfully.",
-            "task" => $task,
-            "status" => 200
-        ];
-        return response()->json($data, 200);
+        return new TaskResource($task);
     }
 
     public function updatePartial(Request $request, string $id)
@@ -97,12 +95,7 @@ class taskController extends Controller
 
         $task->save();
 
-        $data = [
-            "message" => "Task modified successfully.",
-            "task" => $task,
-            "status" => 200
-        ];
-        return response()->json($data, 200);
+        return new TaskResource($task);
     }
 
     public function destroy(string $id)
@@ -119,20 +112,6 @@ class taskController extends Controller
 
         $task->delete();
 
-        $data = [
-            "message" => "Task '$id' deleted.",
-            "status" => 200
-        ];
-        return response()->json($data, 200);
-    }
-
-    private function __buildReturn(Collection|Task|null $tasks = null, int $status = 200, string $message = ""): array {
-        $data = [];
-        
-        if ($message) $data['message'] = $message;
-        if ($tasks) $data['tasks'] = $tasks;
-        $data['status'] = $status;
- 
-        return $data;
+        return new TaskResource($task);
     }
 }
