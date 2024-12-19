@@ -6,17 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Http\Resources\TaskResource;
 use App\Http\Services\Filters\TaskFilter;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 class taskController extends Controller
 {
     public function index(Request $request)
     {
-        $queries = (new TaskFilter)->getFilters($request);
-        $tasks = Task::where($queries)->paginate();
+        $queries = (new TaskFilter)->transform($request);
 
-        return TaskResource::collection($tasks);
+        if (count($queries) == 0)
+            return TaskResource::collection(Task::paginate());
+        
+        $tasks = Task::where($queries)->paginate();
+        return TaskResource::collection($tasks->appends($request->query()));
     }
 
     public function store(Request $request)

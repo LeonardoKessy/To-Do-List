@@ -11,8 +11,4 @@ class TaskFilter extends Filter {
         "detail" => ["_like"],
         "color" => []
     ];
-
-    public function getFilters(Request $request) {
-        return parent::transform($request, $this->safeParams);
-    }
 }
